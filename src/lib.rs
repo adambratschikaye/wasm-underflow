@@ -54,9 +54,11 @@ fn setup() -> Vec<Vec<u8>> {
 #[no_mangle]
 pub fn foo() {
     let vecs = setup();
+
     let mut init = Bar::new();
     let count = (1024 * 1024) / (SIZE as u64) + 2;
     bar(count, &mut init);
+
     println!("checking vecs");
     for v in vecs {
         for b in v {
