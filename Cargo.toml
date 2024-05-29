@@ -1,0 +1,16 @@
+[package]
+name = "candid-trap"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+candid = { path = "../candid/rust/candid" }
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = { version = "1.0", features = ["unbounded_depth"] }
+dlmalloc = { path = "../dlmalloc-rs", features = ["global", "debug"] }
+
+[profile.release]
+debug = true
