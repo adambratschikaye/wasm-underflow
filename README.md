@@ -15,7 +15,7 @@ $ cargo build --target wasm32-wasmtime
 
 ## Run
 ```
-$ wasmtime run -W max-wasm-stack=$((8 * 1024 * 1024)) --invoke foo target/wasm32-wasi/debug/wasm_underflow.wasm
+$ wasmtime run -W max-wasm-stack=$((5 * 1024 * 1024)) --invoke foo target/wasm32-wasi/debug/wasm_underflow.wasm
 ```
 
 Running should have an output like:
@@ -55,8 +55,8 @@ In the main function:
 ```
     let vecs = setup();
 
-    let mut init = Bar::new();
-    let count = (1024 * 1024) / (SIZE as u64) + 2;
+    let mut init = [0_u8; SIZE];
+    let count = (1024 * 1024) / (2 * SIZE as u64) + 2;
     bar(count, &mut init);
 
     println!("checking vecs");
