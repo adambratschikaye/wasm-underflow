@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wasm PoC</title>
+    <script>
+        const importObject = {};
+        WebAssembly.instantiateStreaming(fetch("./target/wasm32-unknown-unknown/debug/wasm_underflow.wasm"), importObject).then(
+            (obj) => {
+                console.log("Executing foo");
+                obj.instance.exports.foo();
+            },
+        );
+
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>

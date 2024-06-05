@@ -1,10 +1,15 @@
 const SIZE: usize = 16;
 
-fn bar(count: u64, prev: &mut [u8; SIZE]) -> u8 {
-    let mut next = [0; SIZE];
-    next[0] = 0xab;
+fn bar(count: u64, prev: &mut [[u8; SIZE]; SIZE]) -> u8 {
+    let mut next = [[0; SIZE]; SIZE];
+    next[0][0] = 0xab;
+    // dummy has the same stack allocation as * const.
+    // Useful for swapping between println without affecting offset.
+    // printing stack location is useful to know the offset for preallocation.
+    let _dummy = [0_i32; SIZE];
+    // println!("Stack location at {:?}", next.as_ptr());
     if count == 0 {
-        return prev[0];
+        return prev[0][0];
     }
     bar(count - 1, &mut next)
 }
@@ -42,9 +47,12 @@ fn setup() -> Vec<Vec<u8>> {
 #[no_mangle]
 pub fn foo() {
     let vecs = setup();
+    // Stack preloader
+    // Useful for aligning offset before underflow
+    let _dummy = [0_i32; 368 * 500 + 364];
 
-    let mut init = [0_u8; SIZE];
-    let count = (1024 * 1024) / (2 * SIZE as u64) + 2;
+    let mut init = [[0_u8; SIZE]; SIZE];
+    let count = 900;
     bar(count, &mut init);
 
     println!("checking vecs");
