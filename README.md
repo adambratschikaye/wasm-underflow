@@ -73,10 +73,12 @@ In the main function:
 
 ## Affected Platforms
 
-| Platform | Affected | Version        |
-| -------- | -------- | -------------- |
-| wasmtime | ✅        | 21.0.1         |
-| wasmer   | ❌        | 4.3.1          |
-| wasmedge | ✅        | 0.14.0         |
-| Node     | ✅        | 21.7.3         |
-| Chrome   | ✅        | 125.0.6422.142 |
+| Platform | Affected | Version                   |
+| -------- | -------- | ------------------------- |
+| wasmtime | ✅        | 21.0.1                    |
+| wasmer   | ❌        | 4.3.1                     |
+| wasmedge | ✅        | 0.14.0                    |
+| Node     | ✅        | 21.7.3                    |
+| Chrome   | ✅        | 125.0.6422.142            |
+| Firefox  | ✅        | 126.0.1                   |
+| Safari   | ✅        | 17.4.1 (19618.1.15.11.14) |
