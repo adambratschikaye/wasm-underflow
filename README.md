@@ -10,12 +10,13 @@ wasmtime-cli 21.0.1
 
 ## Build
 ```
-$ cargo build --target wasm32-wasmtime
+$ cargo build --target wasm32-wasi
+$ cargo build --target wasm32-unknown-unknown
 ```
 
 ## Run
 ```
-$ wasmtime run -W max-wasm-stack=$((5 * 1024 * 1024)) --invoke foo target/wasm32-wasi/debug/wasm_underflow.wasm
+$ wasmtime run --invoke foo target/wasm32-wasi/debug/wasm_underflow.wasm
 ```
 
 Running should have an output like:
@@ -54,19 +55,30 @@ Caused by:
 In the main function:
 ```
     let vecs = setup();
+    let _dummy = [0_i32; 368 * 500 + 364];
 
-    let mut init = [0_u8; SIZE];
-    let count = (1024 * 1024) / (2 * SIZE as u64) + 2;
+    let mut init = [[0_u8; SIZE]; SIZE];
+    let count = 900;
     bar(count, &mut init);
 
     println!("checking vecs");
     for v in vecs {
         for b in v {
-            assert_eq!(b, 0);
+            assert_eq!(b, 0, "Vector has non-zero value 0x{:x}", b);
         }
     }
 ```
 `setup` creates some vectors which are all initialized with `0`s.
-`bar` doesn't touch those vectors, but it recurses which underflows the rust stack and corrupts the vectors at the end of the main Wasm memory.
-After `bar` completes, fail the assertion because one of the vectors has had its initial value changed even though it should be immutable.
+`bar` doesn't touch those vectors, but it recurses which underflows the rust stack and corrupts the vectors at the end of the main Wasm memory. `dummy` preallocates the stack to reduce the recursion required. After `bar` completes, fail the assertion because one of the vectors has had its initial value changed even though it should be immutable.
 
+## Affected Platforms
+
+| Platform | Affected | Version                   |
+| -------- | -------- | ------------------------- |
+| wasmtime | ✅        | 21.0.1                    |
+| wasmer   | ❌        | 4.3.1                     |
+| wasmedge | ✅        | 0.14.0                    |
+| Node     | ✅        | 21.7.3                    |
+| Chrome   | ✅        | 125.0.6422.142            |
+| Firefox  | ✅        | 126.0.1                   |
+| Safari   | ✅        | 17.4.1 (19618.1.15.11.14) |
