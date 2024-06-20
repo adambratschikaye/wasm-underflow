@@ -1,6 +1,6 @@
 const SIZE: usize = 16;
 
-fn bar(count: u64, prev: &mut [[u8; SIZE]; SIZE]) -> u8 {
+fn overflow_stack(count: u64, prev: &mut [[u8; SIZE]; SIZE]) -> u8 {
     let mut next = [[0; SIZE]; SIZE];
     next[0][0] = 0xab;
     // dummy has the same stack allocation as * const.
@@ -11,10 +11,10 @@ fn bar(count: u64, prev: &mut [[u8; SIZE]; SIZE]) -> u8 {
     if count == 0 {
         return prev[0][0];
     }
-    bar(count - 1, &mut next)
+    overflow_stack(count - 1, &mut next)
 }
 
-fn setup() -> Vec<Vec<u8>> {
+fn allocate_zeros() -> Vec<Vec<u8>> {
     let mut vecs = vec![];
     let mut current_max = 0;
     loop {
@@ -45,15 +45,15 @@ fn setup() -> Vec<Vec<u8>> {
 }
 
 #[no_mangle]
-pub fn foo() {
-    let vecs = setup();
+pub fn main() {
+    let vecs = allocate_zeros();
     // Stack preloader
     // Useful for aligning offset before underflow
     let _dummy = [0_i32; 368 * 500 + 364];
 
     let mut init = [[0_u8; SIZE]; SIZE];
     let count = 900;
-    bar(count, &mut init);
+    overflow_stack(count, &mut init);
 
     println!("checking vecs");
     for v in vecs {

@@ -16,7 +16,7 @@ $ cargo build --target wasm32-unknown-unknown
 
 ## Run
 ```
-$ wasmtime run --invoke foo target/wasm32-wasi/debug/wasm_underflow.wasm
+$ wasmtime run --invoke main target/wasm32-wasi/debug/wasm_underflow.wasm
 ```
 
 Running should have an output like:
@@ -32,7 +32,7 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Error: failed to run main module `target/wasm32-wasi/debug/wasm_underflow.wasm`
 
 Caused by:
-    0: failed to invoke `foo`
+    0: failed to invoke `main`
     1: error while executing at wasm backtrace:
            0: 0xa84a - wasm_underflow.wasm!__rust_start_panic
            1: 0xa7a4 - wasm_underflow.wasm!rust_panic
@@ -43,8 +43,8 @@ Caused by:
            6: 0xee43 - wasm_underflow.wasm!core::panicking::panic_fmt::hdb62f5cdb45533e4
            7: 0x10247 - wasm_underflow.wasm!core::panicking::assert_failed_inner::hcf1985c073eb6fd3
            8: 0x4ccf - wasm_underflow.wasm!core::panicking::assert_failed::hdf150a194974dcdc
-           9: 0x5a57 - wasm_underflow.wasm!foo
-          10: 0x118c7 - wasm_underflow.wasm!foo.command_export
+           9: 0x5a57 - wasm_underflow.wasm!main
+          10: 0x118c7 - wasm_underflow.wasm!main.command_export
        note: using the `WASMTIME_BACKTRACE_DETAILS=1` environment variable may show more debugging information
     2: wasm trap: wasm `unreachable` instruction executed
 
@@ -54,12 +54,14 @@ Caused by:
 ## Explanation
 In the main function:
 ```
-    let vecs = setup();
+    let vecs = allocate_zeros();
+    // Stack preloader
+    // Useful for aligning offset before underflow
     let _dummy = [0_i32; 368 * 500 + 364];
 
     let mut init = [[0_u8; SIZE]; SIZE];
     let count = 900;
-    bar(count, &mut init);
+    overflow_stack(count, &mut init);
 
     println!("checking vecs");
     for v in vecs {
@@ -68,8 +70,8 @@ In the main function:
         }
     }
 ```
-`setup` creates some vectors which are all initialized with `0`s.
-`bar` doesn't touch those vectors, but it recurses which underflows the rust stack and corrupts the vectors at the end of the main Wasm memory. `dummy` preallocates the stack to reduce the recursion required. After `bar` completes, fail the assertion because one of the vectors has had its initial value changed even though it should be immutable.
+`allocate_zeros` creates some vectors which are all initialized with `0`s.
+`overflow_stack` doesn't touch those vectors, but it recurses which underflows the rust stack and corrupts the vectors at the end of the main Wasm memory. `dummy` preallocates the stack to reduce the recursion required. After `overflow_stack` completes, the assertion fails because one of the vectors has had its initial value changed even though it should be immutable.
 
 ## Affected Platforms
 

@@ -9,8 +9,8 @@
         const importObject = {};
         WebAssembly.instantiateStreaming(fetch("./target/wasm32-unknown-unknown/debug/wasm_underflow.wasm"), importObject).then(
             (obj) => {
-                console.log("Executing foo");
-                obj.instance.exports.foo();
+                console.log("Executing main");
+                obj.instance.exports.main();
             },
         );
 
